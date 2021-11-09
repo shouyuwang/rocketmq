@@ -74,24 +74,26 @@ public class NamesrvController {
     }
 
     public boolean initialize() {
-
+        // 加载kv
         this.kvConfigManager.load();
-
+        // 创建nettyServer服务
         this.remotingServer = new NettyRemotingServer(this.nettyServerConfig, this.brokerHousekeepingService);
-
+        // netty线程池
         this.remotingExecutor =
             Executors.newFixedThreadPool(nettyServerConfig.getServerWorkerThreads(), new ThreadFactoryImpl("RemotingExecutorThread_"));
-
+        // 注册执行器
         this.registerProcessor();
-
+        // 创建定时扫描离线的broker，延迟5秒，每隔10秒执行一次
         this.scheduledExecutorService.scheduleAtFixedRate(new Runnable() {
 
             @Override
             public void run() {
+                // 扫描不在线的broker
                 NamesrvController.this.routeInfoManager.scanNotActiveBroker();
             }
         }, 5, 10, TimeUnit.SECONDS);
 
+        // 创建打印kv的周期性任务，延迟1分钟，每隔10分钟执行一次
         this.scheduledExecutorService.scheduleAtFixedRate(new Runnable() {
 
             @Override
@@ -142,17 +144,19 @@ public class NamesrvController {
     }
 
     private void registerProcessor() {
+        // 判断是否为器群模式
         if (namesrvConfig.isClusterTest()) {
 
             this.remotingServer.registerDefaultProcessor(new ClusterTestRequestProcessor(this, namesrvConfig.getProductEnvName()),
                 this.remotingExecutor);
         } else {
-
+            // 非集群模式下注册DefaultRequestProcessor
             this.remotingServer.registerDefaultProcessor(new DefaultRequestProcessor(this), this.remotingExecutor);
         }
     }
 
     public void start() throws Exception {
+        // 启动服务
         this.remotingServer.start();
 
         if (this.fileWatchService != null) {

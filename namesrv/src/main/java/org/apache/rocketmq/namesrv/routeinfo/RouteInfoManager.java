@@ -440,14 +440,21 @@ public class RouteInfoManager {
     }
 
     public void scanNotActiveBroker() {
+        // 循环brokerLiveTable
         Iterator<Entry<String, BrokerLiveInfo>> it = this.brokerLiveTable.entrySet().iterator();
         while (it.hasNext()) {
+            // 获取brokerLiveTable
             Entry<String, BrokerLiveInfo> next = it.next();
+            // 获取最后一次更新时间
             long last = next.getValue().getLastUpdateTimestamp();
+            // 最后一次更新时间 + 120秒 < 当前时间，就认为是离线的了
             if ((last + BROKER_CHANNEL_EXPIRED_TIME) < System.currentTimeMillis()) {
+                // 关闭channel
                 RemotingUtil.closeChannel(next.getValue().getChannel());
+                // 移除BrokerLiveInfo
                 it.remove();
                 log.warn("The broker channel expired, {} {}ms", next.getKey(), BROKER_CHANNEL_EXPIRED_TIME);
+                // 调用销毁channel事件，从各个map中移除关于当前broker的信息
                 this.onChannelDestroy(next.getKey(), next.getValue().getChannel());
             }
         }
@@ -487,7 +494,9 @@ public class RouteInfoManager {
             try {
                 try {
                     this.lock.writeLock().lockInterruptibly();
+                    // 从brokerLiveTable中移除
                     this.brokerLiveTable.remove(brokerAddrFound);
+                    // 从filterServerTable中移除
                     this.filterServerTable.remove(brokerAddrFound);
                     String brokerNameFound = null;
                     boolean removeBrokerName = false;
@@ -501,8 +510,10 @@ public class RouteInfoManager {
                             Entry<Long, String> entry = it.next();
                             Long brokerId = entry.getKey();
                             String brokerAddr = entry.getValue();
+                            // 比较BrokerAddr
                             if (brokerAddr.equals(brokerAddrFound)) {
                                 brokerNameFound = brokerData.getBrokerName();
+                                // 移除BrokerAddr
                                 it.remove();
                                 log.info("remove brokerAddr[{}, {}] from brokerAddrTable, because channel destroyed",
                                     brokerId, brokerAddr);
@@ -512,6 +523,7 @@ public class RouteInfoManager {
 
                         if (brokerData.getBrokerAddrs().isEmpty()) {
                             removeBrokerName = true;
+                            // 如果brokerAddrTable中的brokerAddr为空，进行移除
                             itBrokerAddrTable.remove();
                             log.info("remove brokerName[{}] from brokerAddrTable, because channel destroyed",
                                 brokerData.getBrokerName());
@@ -524,6 +536,7 @@ public class RouteInfoManager {
                             Entry<String, Set<String>> entry = it.next();
                             String clusterName = entry.getKey();
                             Set<String> brokerNames = entry.getValue();
+                            // clusterAddrTable中进行移除brokerName
                             boolean removed = brokerNames.remove(brokerNameFound);
                             if (removed) {
                                 log.info("remove brokerName[{}], clusterName[{}] from clusterAddrTable, because channel destroyed",
@@ -552,6 +565,7 @@ public class RouteInfoManager {
                             while (itQueueData.hasNext()) {
                                 QueueData queueData = itQueueData.next();
                                 if (queueData.getBrokerName().equals(brokerNameFound)) {
+                                    // 移除topic
                                     itQueueData.remove();
                                     log.info("remove topic[{} {}], from topicQueueTable, because channel destroyed",
                                         topic, queueData);
@@ -559,6 +573,7 @@ public class RouteInfoManager {
                             }
 
                             if (queueDataList.isEmpty()) {
+                                // 移除topicQueueTable
                                 itTopicQueueTable.remove();
                                 log.info("remove topic[{}] all queue, from topicQueueTable, because channel destroyed",
                                     topic);

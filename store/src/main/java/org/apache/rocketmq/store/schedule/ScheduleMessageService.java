@@ -114,6 +114,7 @@ public class ScheduleMessageService extends ConfigManager {
         if (started.compareAndSet(false, true)) {
             super.load();
             this.timer = new Timer("ScheduleMessageTimerThread", true);
+            // 循环delay时间
             for (Map.Entry<Integer, Long> entry : this.delayLevelTable.entrySet()) {
                 Integer level = entry.getKey();
                 Long timeDelay = entry.getValue();
@@ -123,6 +124,7 @@ public class ScheduleMessageService extends ConfigManager {
                 }
 
                 if (timeDelay != null) {
+                    // timer周期任务添加，延迟1秒执行
                     this.timer.schedule(new DeliverDelayedMessageTimerTask(level, offset), FIRST_DELAY_TIME);
                 }
             }
@@ -274,6 +276,7 @@ public class ScheduleMessageService extends ConfigManager {
         public void run() {
             try {
                 if (isStarted()) {
+                    // 执行任务
                     this.executeOnTimeup();
                 }
             } catch (Exception e) {
@@ -300,6 +303,7 @@ public class ScheduleMessageService extends ConfigManager {
         }
 
         public void executeOnTimeup() {
+            // 查询topic=SCHEDULE_TOPIC_XXXX，queueId=delayLevel-1的任务
             ConsumeQueue cq =
                 ScheduleMessageService.this.defaultMessageStore.findConsumeQueue(TopicValidator.RMQ_SYS_SCHEDULE_TOPIC,
                     delayLevel2QueueId(delayLevel));

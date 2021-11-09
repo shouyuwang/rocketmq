@@ -285,6 +285,7 @@ public class DefaultMessageStore implements MessageStore {
 
         if (!messageStoreConfig.isEnableDLegerCommitLog()) {
             this.haService.start();
+            // 启动定时周期性消息服务
             this.handleScheduleMessageService(messageStoreConfig.getBrokerRole());
         }
 
@@ -1195,6 +1196,7 @@ public class DefaultMessageStore implements MessageStore {
     }
 
     public ConsumeQueue findConsumeQueue(String topic, int queueId) {
+        // 根据topic查询队列id对应queue的map
         ConcurrentMap<Integer, ConsumeQueue> map = consumeQueueTable.get(topic);
         if (null == map) {
             ConcurrentMap<Integer, ConsumeQueue> newMap = new ConcurrentHashMap<Integer, ConsumeQueue>(128);
@@ -1508,9 +1510,11 @@ public class DefaultMessageStore implements MessageStore {
     @Override
     public void handleScheduleMessageService(final BrokerRole brokerRole) {
         if (this.scheduleMessageService != null) {
+            // 判断是否为SLAVE
             if (brokerRole == BrokerRole.SLAVE) {
                 this.scheduleMessageService.shutdown();
             } else {
+                // 启动服务
                 this.scheduleMessageService.start();
             }
         }

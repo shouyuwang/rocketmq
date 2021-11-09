@@ -886,6 +886,7 @@ public class BrokerController {
     public void start() throws Exception {
         // 各种服务启动
         if (this.messageStore != null) {
+            // 启动messageStore
             this.messageStore.start();
         }
 

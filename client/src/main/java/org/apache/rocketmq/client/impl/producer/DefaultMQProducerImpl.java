@@ -836,7 +836,9 @@ public class DefaultMQProducerImpl implements MQProducerInner {
                         context.setMsgType(MessageType.Trans_Msg_Half);
                     }
 
+                    // 判断是否是延迟队列
                     if (msg.getProperty("__STARTDELIVERTIME") != null || msg.getProperty(MessageConst.PROPERTY_DELAY_TIME_LEVEL) != null) {
+                        // 设置消息类型为延迟消息
                         context.setMsgType(MessageType.Delay_Msg);
                     }
                     this.executeSendMessageHookBefore(context);

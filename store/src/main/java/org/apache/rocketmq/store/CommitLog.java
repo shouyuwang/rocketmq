@@ -604,12 +604,15 @@ public class CommitLog {
         if (tranType == MessageSysFlag.TRANSACTION_NOT_TYPE
                 || tranType == MessageSysFlag.TRANSACTION_COMMIT_TYPE) {
             // Delay Delivery
+            // 延迟消息投递
             if (msg.getDelayTimeLevel() > 0) {
                 if (msg.getDelayTimeLevel() > this.defaultMessageStore.getScheduleMessageService().getMaxDelayLevel()) {
                     msg.setDelayTimeLevel(this.defaultMessageStore.getScheduleMessageService().getMaxDelayLevel());
                 }
 
+                // 设置topic为SCHEDULE_TOPIC_XXXX
                 topic = TopicValidator.RMQ_SYS_SCHEDULE_TOPIC;
+                // 将dealyTimeLevel转换为queueId
                 queueId = ScheduleMessageService.delayLevel2QueueId(msg.getDelayTimeLevel());
 
                 // Backup real topic, queueId

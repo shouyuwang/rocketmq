@@ -102,11 +102,12 @@ public class BrokerOuterAPI {
 
     public void updateNameServerAddressList(final String addrs) {
         List<String> lst = new ArrayList<String>();
+        // 以;进行分割
         String[] addrArray = addrs.split(";");
         for (String addr : addrArray) {
             lst.add(addr);
         }
-
+        // 设置nameserverAddress列表
         this.remotingClient.updateNameServerAddressList(lst);
     }
 
@@ -121,8 +122,9 @@ public class BrokerOuterAPI {
         final boolean oneway,
         final int timeoutMills,
         final boolean compressed) {
-
+        // 定义全部broker响应结果列表
         final List<RegisterBrokerResult> registerBrokerResultList = new CopyOnWriteArrayList<>();
+        // 定义nameServerAddress列表
         List<String> nameServerAddressList = this.remotingClient.getNameServerAddressList();
         if (nameServerAddressList != null && nameServerAddressList.size() > 0) {
 
@@ -141,13 +143,16 @@ public class BrokerOuterAPI {
             final int bodyCrc32 = UtilAll.crc32(body);
             requestHeader.setBodyCrc32(bodyCrc32);
             final CountDownLatch countDownLatch = new CountDownLatch(nameServerAddressList.size());
+            // 循环nameServerAddr
             for (final String namesrvAddr : nameServerAddressList) {
                 brokerOuterExecutor.execute(new Runnable() {
                     @Override
                     public void run() {
                         try {
+                            // 注册broker
                             RegisterBrokerResult result = registerBroker(namesrvAddr, oneway, timeoutMills, requestHeader, body);
                             if (result != null) {
+                                // 添加结果
                                 registerBrokerResultList.add(result);
                             }
 
@@ -178,18 +183,21 @@ public class BrokerOuterAPI {
         final byte[] body
     ) throws RemotingCommandException, MQBrokerException, RemotingConnectException, RemotingSendRequestException, RemotingTimeoutException,
         InterruptedException {
+        // 创建注册broker请求
         RemotingCommand request = RemotingCommand.createRequestCommand(RequestCode.REGISTER_BROKER, requestHeader);
+        // 设置请求体
         request.setBody(body);
 
         if (oneway) {
             try {
+                // 如果是oneway模式直接进行注册
                 this.remotingClient.invokeOneway(namesrvAddr, request, timeoutMills);
             } catch (RemotingTooMuchRequestException e) {
                 // Ignore
             }
             return null;
         }
-
+        // 同步进行注册
         RemotingCommand response = this.remotingClient.invokeSync(namesrvAddr, request, timeoutMills);
         assert response != null;
         switch (response.getCode()) {

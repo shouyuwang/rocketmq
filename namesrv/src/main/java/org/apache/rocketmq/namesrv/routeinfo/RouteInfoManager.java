@@ -114,6 +114,7 @@ public class RouteInfoManager {
             try {
                 this.lock.writeLock().lockInterruptibly();
 
+                // 获取brokerName列表
                 Set<String> brokerNames = this.clusterAddrTable.get(clusterName);
                 if (null == brokerNames) {
                     brokerNames = new HashSet<String>();
@@ -123,7 +124,9 @@ public class RouteInfoManager {
 
                 boolean registerFirst = false;
 
+                // 获取brokerData
                 BrokerData brokerData = this.brokerAddrTable.get(brokerName);
+                // 校验是否第一次注册
                 if (null == brokerData) {
                     registerFirst = true;
                     brokerData = new BrokerData(clusterName, brokerName, new HashMap<Long, String>());
@@ -157,6 +160,7 @@ public class RouteInfoManager {
                     }
                 }
 
+                // 添加brokerLiveTable
                 BrokerLiveInfo prevBrokerLiveInfo = this.brokerLiveTable.put(brokerAddr,
                     new BrokerLiveInfo(
                         System.currentTimeMillis(),

@@ -101,6 +101,7 @@ public class ClientConfig {
     }
 
     public String withNamespace(String resource) {
+        // 设置namespace
         return NamespaceUtil.wrapNamespace(this.getNamespace(), resource);
     }
 

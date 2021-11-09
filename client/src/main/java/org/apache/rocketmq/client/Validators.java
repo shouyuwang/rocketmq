@@ -80,22 +80,28 @@ public class Validators {
 
     public static void checkMessage(Message msg, DefaultMQProducer defaultMQProducer)
         throws MQClientException {
+        // 消息非空判断
         if (null == msg) {
             throw new MQClientException(ResponseCode.MESSAGE_ILLEGAL, "the message is null");
         }
         // topic
+        // topic非空，名称，长度校验
         Validators.checkTopic(msg.getTopic());
+        // 是否为SCHEDULE_TOPIC_XXXX判断
         Validators.isNotAllowedSendTopic(msg.getTopic());
 
         // body
+        // 消息内容非空校验
         if (null == msg.getBody()) {
             throw new MQClientException(ResponseCode.MESSAGE_ILLEGAL, "the message body is null");
         }
 
+        // 消息长度校验
         if (0 == msg.getBody().length) {
             throw new MQClientException(ResponseCode.MESSAGE_ILLEGAL, "the message body length is zero");
         }
 
+        // 消息大小判断
         if (msg.getBody().length > defaultMQProducer.getMaxMessageSize()) {
             throw new MQClientException(ResponseCode.MESSAGE_ILLEGAL,
                 "the message body size over max value, MAX: " + defaultMQProducer.getMaxMessageSize());

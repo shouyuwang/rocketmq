@@ -86,7 +86,7 @@ public class MQFaultStrategy {
 
             return tpInfo.selectOneMessageQueue();
         }
-
+        // 选择一个消息队列
         return tpInfo.selectOneMessageQueue(lastBrokerName);
     }
 

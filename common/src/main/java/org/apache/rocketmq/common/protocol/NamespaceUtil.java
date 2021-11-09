@@ -100,7 +100,7 @@ public class NamespaceUtil {
         if (isDLQTopic(resourceWithOutNamespace)) {
             stringBuilder.append(MixAll.DLQ_GROUP_TOPIC_PREFIX);
         }
-
+        // 转换最后为namespace%groupName
         return stringBuilder.append(namespace).append(NAMESPACE_SEPARATOR).append(resourceWithoutRetryAndDLQ).toString();
 
     }

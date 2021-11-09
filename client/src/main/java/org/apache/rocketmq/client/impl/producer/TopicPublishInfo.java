@@ -67,6 +67,7 @@ public class TopicPublishInfo {
     }
 
     public MessageQueue selectOneMessageQueue(final String lastBrokerName) {
+        // 判断brokername是否为空
         if (lastBrokerName == null) {
             return selectOneMessageQueue();
         } else {
@@ -85,10 +86,13 @@ public class TopicPublishInfo {
     }
 
     public MessageQueue selectOneMessageQueue() {
+        // 随机获取一个索引
         int index = this.sendWhichQueue.incrementAndGet();
+        // 取余当前消息队列列表
         int pos = Math.abs(index) % this.messageQueueList.size();
         if (pos < 0)
             pos = 0;
+        // 找出当前消息队列
         return this.messageQueueList.get(pos);
     }
 

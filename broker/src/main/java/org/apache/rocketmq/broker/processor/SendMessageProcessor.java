@@ -82,6 +82,7 @@ public class SendMessageProcessor extends AbstractSendMessageProcessor implement
 
     @Override
     public void asyncProcessRequest(ChannelHandlerContext ctx, RemotingCommand request, RemotingResponseCallback responseCallback) throws Exception {
+        // 处理请求
         asyncProcessRequest(ctx, request).thenAcceptAsync(responseCallback::callback, this.brokerController.getSendMessageExecutor());
     }
 
@@ -92,6 +93,7 @@ public class SendMessageProcessor extends AbstractSendMessageProcessor implement
             case RequestCode.CONSUMER_SEND_MSG_BACK:
                 return this.asyncConsumerSendMsgBack(ctx, request);
             default:
+                // 转换请求头信息
                 SendMessageRequestHeader requestHeader = parseRequestHeader(request);
                 if (requestHeader == null) {
                     return CompletableFuture.completedFuture(null);

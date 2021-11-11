@@ -86,11 +86,14 @@ public class TransactionMQProducer extends DefaultMQProducer {
     @Override
     public TransactionSendResult sendMessageInTransaction(final Message msg,
         final Object arg) throws MQClientException {
+        // 校验事务监听器是否为空，为空直接抛出异常
         if (null == this.transactionListener) {
             throw new MQClientException("TransactionListener is null", null);
         }
 
+        // 设置topic
         msg.setTopic(NamespaceUtil.wrapNamespace(this.getNamespace(), msg.getTopic()));
+        // 发送事务消息
         return this.defaultMQProducerImpl.sendMessageInTransaction(msg, null, arg);
     }
 

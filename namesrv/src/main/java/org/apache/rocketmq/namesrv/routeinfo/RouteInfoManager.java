@@ -57,10 +57,15 @@ public class RouteInfoManager {
     private final HashMap<String/* brokerAddr */, List<String>/* Filter Server */> filterServerTable;
 
     public RouteInfoManager() {
+        // topic -> List<QueueData>
         this.topicQueueTable = new HashMap<String, List<QueueData>>(1024);
+        // brokerName -> BrokerData
         this.brokerAddrTable = new HashMap<String, BrokerData>(128);
+        // clusterName -> Set<brokerName>
         this.clusterAddrTable = new HashMap<String, Set<String>>(32);
+        // brokerAddr -> brokerLiveInfo
         this.brokerLiveTable = new HashMap<String, BrokerLiveInfo>(256);
+        // brokerAddr -> List<server>
         this.filterServerTable = new HashMap<String, List<String>>(256);
     }
 
@@ -402,26 +407,33 @@ public class RouteInfoManager {
         try {
             try {
                 this.lock.readLock().lockInterruptibly();
+                // 获取queue列表
                 List<QueueData> queueDataList = this.topicQueueTable.get(topic);
                 if (queueDataList != null) {
+                    // 设置queueDataList
                     topicRouteData.setQueueDatas(queueDataList);
                     foundQueueData = true;
 
                     Iterator<QueueData> it = queueDataList.iterator();
                     while (it.hasNext()) {
                         QueueData qd = it.next();
+                        // brokerName添加
                         brokerNameSet.add(qd.getBrokerName());
                     }
 
                     for (String brokerName : brokerNameSet) {
+                        // 获取broker地址对应的broker
                         BrokerData brokerData = this.brokerAddrTable.get(brokerName);
                         if (null != brokerData) {
+                            // 创建brokerData
                             BrokerData brokerDataClone = new BrokerData(brokerData.getCluster(), brokerData.getBrokerName(), (HashMap<Long, String>) brokerData
                                 .getBrokerAddrs().clone());
+                            // 添加brokerDataList
                             brokerDataList.add(brokerDataClone);
                             foundBrokerData = true;
                             for (final String brokerAddr : brokerDataClone.getBrokerAddrs().values()) {
                                 List<String> filterServerList = this.filterServerTable.get(brokerAddr);
+                                // 添加地址对应关系
                                 filterServerMap.put(brokerAddr, filterServerList);
                             }
                         }

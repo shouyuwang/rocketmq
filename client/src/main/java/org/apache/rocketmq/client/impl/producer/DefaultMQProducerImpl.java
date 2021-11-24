@@ -831,8 +831,10 @@ public class DefaultMQProducerImpl implements MQProducerInner {
                     context.setMessage(msg);
                     context.setMq(mq);
                     context.setNamespace(this.defaultMQProducer.getNamespace());
+                    // 判断是否为tran_msg
                     String isTrans = msg.getProperty(MessageConst.PROPERTY_TRANSACTION_PREPARED);
                     if (isTrans != null && isTrans.equals("true")) {
+                        // 设置消息类型为trans_msg_half
                         context.setMsgType(MessageType.Trans_Msg_Half);
                     }
 
